@@ -1,5 +1,5 @@
-from sys import exit
-from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QCheckBox, QPushButton, QFileDialog, QVBoxLayout, QTextEdit
+from sys import exit, argv
+from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QCheckBox, QPushButton, QFileDialog, QVBoxLayout
 from PyQt6.QtGui import QIcon
 import downzip
 
@@ -31,6 +31,10 @@ class MyWindow(QWidget):
 
         self.unpack_checkbox = QCheckBox("Automatically overwrite files with the same name")
         self.unpack_checkbox.setStyleSheet("color: #888;")  # Set checkbox color to gray
+        self.launch_checkbox = QCheckBox("Automatically launch inkscape.exe")
+        self.launch_checkbox.setStyleSheet("color: #888;")  # Set checkbox color to gray
+        self.launch_checkbox.setChecked(True)
+
         self.download_button = QPushButton("Download and Unpack")
         self.download_button.setStyleSheet("background-color: #444; color: #FFF;")  # Set button color to dark gray
         self.download_button.clicked.connect(self.download_and_unpack)
@@ -42,6 +46,7 @@ class MyWindow(QWidget):
         layout.addWidget(self.folder_path_input)
         layout.addWidget(self.folder_browse_button)
         layout.addWidget(self.unpack_checkbox)
+        layout.addWidget(self.launch_checkbox)
         layout.addWidget(self.download_button)
 
         self.setLayout(layout)
@@ -63,8 +68,11 @@ class MyWindow(QWidget):
         args = [url]
         if output_path:
             args.append(output_path)
-        if yes_flag:
-            args.append(yes_flag)
+        if self.unpack_checkbox.isChecked():
+            args.append("-y")
+        if self.launch_checkbox.isChecked():
+            args.append("-launch")
+
 
         try:
             downzip.main(args)
@@ -73,7 +81,7 @@ class MyWindow(QWidget):
             print(e)
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
+    app = QApplication(argv)
     window = MyWindow()
     window.show()
     exit(app.exec())

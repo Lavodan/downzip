@@ -5,7 +5,7 @@ SEVZ_PATH = "7zip/7za.exe"
 
 if not path.exists(SEVZ_PATH):
     print("Error! Missing the SEVza executable.")
-    raise ModuleNotFoundError
+    raise FileNotFoundError
 
 def extract(archive, output, FLAGS):
     if "-y" in FLAGS:
