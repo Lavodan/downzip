@@ -24,5 +24,5 @@ def compress(archive, files, FLAGS):
         yesflag = ""
     archive = path.abspath(archive)
     files = [path.abspath(file) for file in files]
-    run(f"{SEVZ_PATH} a {"".join(archive+files)}{yesflag}")
+    run(f"{SEVZ_PATH} a {''.join(archive+files)}{yesflag}")
     return 0
