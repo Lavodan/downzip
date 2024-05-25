@@ -1,12 +1,17 @@
 import sevzhandler, downloader
 from sys import argv
-from os import path, remove, listdir, mkdir, rename, walk
+from os import path, remove, listdir, mkdir, rename
 from shutil import rmtree, move
 from subprocess import run
-import tempfile
+import tempfile   
 
 def main(args=[]):    
-    url, output, args, FLAGS = parse_args(args)
+    try:
+        url, output, args, FLAGS = parse_args(args)
+    except InvalidArgumentError as e:
+        print(str(e))
+        print(f"Usage: {path.basename(__file__)} <valid archive download url> [\"valid output folder\"] [-y] [-launch]")
+        exit(1)
     
     archive_file = downloader.download(url, FLAGS)
     archive = archive_file.name
@@ -43,7 +48,7 @@ def main(args=[]):
     except FileNotFoundError:
         print("Archive wasn't inkscape, skipping renaming...")
     
-    return 0
+    exit(0)
     
 def parse_args(args):
     if len(args) == 0:
@@ -55,15 +60,10 @@ def parse_args(args):
              FLAGS.append(flag)
              args = [arg for arg in args if arg.lower() != flag]
 
-    try:
-        if len(args) < 1 or len(args) > 2:  # Corrected the condition for checking the number of arguments
-            print("Usage: downzip <valid archive download url> [\"valid output folder\"] [-y]")
-            return 1
-        elif args[0].find(".") == -1:
-            print("Invalid url!")
-            return 1
-    except IndexError:
-        pass
+    if len(args) < 1 or len(args) > 2:
+        raise InvalidArgumentError("Invalid number of arguments")
+    elif args[0].find(".") == -1:
+        raise InvalidArgumentError("Invalid url")
         
     url = args[0]
      
@@ -72,7 +72,7 @@ def parse_args(args):
     except IndexError:
         output = None
         
-    return url, output, args, FLAGS
+    return (url, output, args, FLAGS)
     
 def get_innerarchive(archive_folder):
     outer_name = listdir(archive_folder)[0]
@@ -112,6 +112,14 @@ def launch_inkscape(inkscape_folder):
     run(f"\"{location}\"")
     
     return location
+    
+class InvalidArgumentError(Exception):
+    def __init__(self, message):
+        if message:
+            self.message = message + "!"
+
+    def __str__(self):
+        return self.message
     
     
 if __name__ == "__main__":
