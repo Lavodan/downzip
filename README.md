@@ -26,6 +26,12 @@ run DownZip.exe
 use buttons  
 you MAY need to use console to confirm overriting if you do not use the "Always Yes" flag  
 
+## TODO
+- Switch to a different compiler from pythoninstaller to make cross platform installs easier (probably fbs)
+- Make the GUI more readable like the light version
+- add an integrated console (probably doable with threading?) instead of the default one
+- reconsider the code's structure (downloader.py has lost its reason for being a separate file as it has become more simple)
+
 ## Attributions
 icon designed by Freepik  
 7zip is NOT made by me (lol)
