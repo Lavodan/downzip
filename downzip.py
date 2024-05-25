@@ -1,7 +1,7 @@
 import sevzhandler, downloader
 from sys import argv
-from os import path, remove, listdir, mkdir, rename
-from shutil import rmtree
+from os import path, remove, listdir, mkdir, rename, walk
+from shutil import rmtree, move
 from subprocess import run
 import tempfile
 
@@ -24,6 +24,8 @@ def main(args=[]):
 
     if not output:
         output = path.join("down_temp", inner_name)
+        while path.isdir(output):
+            output += "_"
     
     sevzhandler.extract(innerarchive, output, FLAGS)
     print(f"Inner archive extracted to {output}")
@@ -31,11 +33,12 @@ def main(args=[]):
     archive_folder_file.cleanup()
     print("Intermediate files deleted")
     
+    output = move_content_up(output, path.join(output, "inkscape"))
+    print(f"Inkscape content moved to {output} folder")
+    
     try:
-        inkscape_folder = rename_inkscape(output)
-        
         if "-launch" in FLAGS:
-            location = launch_inkscape(inkscape_folder)
+            location = launch_inkscape(output)
             print(f"Launching inkscape from {location}")
     except FileNotFoundError:
         print("Archive wasn't inkscape, skipping renaming...")
@@ -77,6 +80,13 @@ def get_innerarchive(archive_folder):
     innerarchive = path.join(archive_folder, outer_name, inner_name)
     
     return inner_name, innerarchive
+    
+def move_content_up(root_folder, nested_folder):
+    for file in listdir(nested_folder):
+        file_path = path.join(nested_folder, file)
+        move(file_path, root_folder)
+    rmtree(nested_folder)
+    return root_folder
     
 def rename_inkscape(inner_folder):
     inkscape = False
