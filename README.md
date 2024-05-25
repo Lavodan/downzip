@@ -9,7 +9,7 @@ Made with Windows primarily for Windows. Uses python libraries such as sys and o
 
 ## Installation
 clone repo,  
-install dependancies (non-comprehensive list: PyQt6, requests),  
+install dependancies (non-comprehensive list: python, PyQt6, libxkbcommon-x11-0, requests),  
 run downzip.py or guihandler.py  
   
 OR  
