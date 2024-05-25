@@ -1,7 +1,7 @@
 # downzip
 A CLI/GUI tool for downloading and uncompressing weirdly nested archives
 
-###WARNING
+### WARNING
 
 Do not use this tool for non archive files, for files in a different format than it is handled for. This program cleans up after itself, which means it deletes files, no guarantee for unexpected behaviour!!
 Designed to only handle archive files in the format of archive(folder(archive(content))). Extracts content into specified folder, or the default temporary folder "./temp_down".
