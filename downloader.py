@@ -1,63 +1,18 @@
 from requests import get, head
 from os import path, remove
-
+import tempfile
 
 
 def download(url, FLAGS, output=None):
-    response = get(url, stream=True)
+    response = get(url, stream=True)   
     
-    headers = head(url).headers
-    if output == None:
-        try:
-            start_filename = headers["content-disposition"][headers["content-disposition"].find("filename")+len("filename")+1::]
-            if start_filename.find(";") == -1:
-                name = start_filename[::]
-            else:
-                name = start_filename[:start_filename.find(";")-1:]
-        except KeyError:
-            try:
-                name1 = headers["location"][-1 * headers["location"][::-1].find("/")::]
-                name2 = headers["location"][-20::]
-                name = name1 if len(name1) < len(name2) else name2
-            except KeyError:
-                name = "unnamed"
-            
-        nname = ""
-        for char in name:
-            if not char in "<>:\"/\\|?*":
-                nname += char
-        name = nname
-        name = name.rstrip(". ")
-        name = name[:-1 * name[::-1].find(".") - 1:]
-        output = f"./temp_down/{name}"
-            
-    if path.exists(output):
-        currentsize = path.getsize(output)
-    else:
-        currentsize = 0
-        
-    try:
-        netsize = int(response.headers["content-length"])
-    except KeyError:
-        netsize = 2**30-1
-        
-    output, mo = checkfile(output, currentsize, netsize, FLAGS)
-    mode = "ab" if mo else "wb"
-    
-    if mode == "ab":
-        response = get(url, stream = True, headers = {"Range": f"bytes={path.getsize(output)+1}-{response.headers["content-length"]}"})
-    
-    print(output, mode)
-    
-    
-    
-    with open(output, mode=mode) as file:
+    with tempfile.NamedTemporaryFile(delete=False) as file:
         print("Downloading file...")
         chunk_size = 5 * 2**20
         for idx, chunk in enumerate(response.iter_content(chunk_size = chunk_size)):
             file.write(chunk)
             print(f"{round(chunk_size*(idx+1)/1000000, 3)}MB downloaded")
-    return output
+    return file
 
 def checkfile(filepath, filesize, netsize, FLAGS):
     while path.isdir(filepath):

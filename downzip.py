@@ -3,8 +3,46 @@ from sys import argv
 from os import path, remove, listdir, mkdir, rename
 from shutil import rmtree
 from subprocess import run
+import tempfile
 
-def main(args=[]):
+def main(args=[]):    
+    url, output, args, FLAGS = parse_args(args)
+    
+    archive_file = downloader.download(url, FLAGS)
+    archive = archive_file.name
+    print(f"File downloaded to {archive}")
+    
+    archive_folder_file = tempfile.TemporaryDirectory()
+    archive_folder = archive_folder_file.name
+    sevzhandler.extract(archive, archive_folder, FLAGS)
+    print(f"Original archive extracted to {archive_folder}")
+    
+    remove(archive_file.name)
+    print("Original archive deleted")
+    
+    inner_name, innerarchive = get_innerarchive(archive_folder)
+
+    if not output:
+        output = path.join("down_temp", inner_name)
+    
+    sevzhandler.extract(innerarchive, output, FLAGS)
+    print(f"Inner archive extracted to {output}")
+    
+    archive_folder_file.cleanup()
+    print("Intermediate files deleted")
+    
+    try:
+        inkscape_folder = rename_inkscape(output)
+        
+        if "-launch" in FLAGS:
+            location = launch_inkscape(inkscape_folder)
+            print(f"Launching inkscape from {location}")
+    except FileNotFoundError:
+        print("Archive wasn't inkscape, skipping renaming...")
+    
+    return 0
+    
+def parse_args(args):
     if len(args) == 0:
         args = argv[1::]
 
@@ -23,54 +61,22 @@ def main(args=[]):
             return 1
     except IndexError:
         pass
-
+        
     url = args[0]
+     
     try:
         output = args[1].lstrip("./")
     except IndexError:
         output = None
-    
-    archive = downloader.download(url, FLAGS, output)
-    
-    if not path.isfile(archive):
-        output = archive
-    else:
-        output = archive+"_OUT"
-    
-    if not path.isdir(output):
-        mkdir(output)
         
-    print(f"File downloaded to {archive}")
-       
-    sevzhandler.extract(archive, output, FLAGS)
-    print(f"First file extracted to {output}")
+    return url, output, args, FLAGS
     
-    remove(archive)
-    print("Original archive deleted")
+def get_innerarchive(archive_folder):
+    outer_name = listdir(archive_folder)[0]
+    inner_name = listdir(path.join(archive_folder, outer_name))[0]
+    innerarchive = path.join(archive_folder, outer_name, inner_name)
     
-    
-    outer_name = listdir(output)[0]
-    inner_name = listdir(path.join(output, outer_name))[0]
-    innerarchive = path.join(output, outer_name, inner_name)
-    sevzhandler.extract(innerarchive, output.rstrip("_OUT"), FLAGS)
-    print(f"Inner archive extracted to {output.rstrip("_OUT")}")
-    
-    if output == output.rstrip("_OUT"):
-        rmtree(path.join(output, outer_name))
-    else:
-        rmtree(output)
-    print("Intermediate files deleted")
-    
-    try:
-        inkscape_folder = rename_inkscape(output.rstrip("_OUT"))
-        
-        if "-launch" in FLAGS:
-            location = launch_inkscape(inkscape_folder)
-            print(f"Launching inkscape from {location}")
-    except FileNotFoundError:
-        print("Archive wasn't inkscape, skipping renaming...")
-    
-    return 0
+    return inner_name, innerarchive
     
 def rename_inkscape(inner_folder):
     inkscape = False
@@ -79,7 +85,7 @@ def rename_inkscape(inner_folder):
         if folder == "inkscape":
             inkscape = True
         elif folder.startswith("inkscape"):
-            highest = int(folder.split(" ")[1])
+            highest = max(int(folder.split(" ")[1]), highest)
         else:
             pass
             
@@ -92,7 +98,6 @@ def rename_inkscape(inner_folder):
         return newname
     
 def launch_inkscape(inkscape_folder):
-    breakpoint()
     location = path.join(inkscape_folder, "bin", "inkscape.exe")
     run(f"\"{location}\"")
     

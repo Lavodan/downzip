@@ -2,6 +2,7 @@ from sys import exit, argv
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QCheckBox, QPushButton, QFileDialog, QVBoxLayout
 from PyQt6.QtGui import QIcon
 import downzip
+import threading
 
 class MyWindow(QWidget):
     def __init__(self):
@@ -75,13 +76,21 @@ class MyWindow(QWidget):
 
 
         try:
-            downzip.main(args)
+            downzip_thread = threading.Thread(target=downzip.main, args=(args,))
+            downzip_thread.start()
         except Exception as e:
             import traceback; traceback.print_exc()
             print(e)
 
-if __name__ == '__main__':
+def main():
     app = QApplication(argv)
     window = MyWindow()
     window.show()
     exit(app.exec())
+    
+if __name__ == '__main__':
+    gui_thread = threading.Thread(target=main)
+    gui_thread.start()
+    gui_thread.join()
+
+    
