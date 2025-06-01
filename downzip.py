@@ -38,10 +38,10 @@ def main(args=[]):
     archive_folder_file.cleanup()
     print("Intermediate files deleted")
 
-    archive_contents = os.listdir(output)
+    archive_contents = listdir(output)
     archive_contets_folder = path.join(output, archive_contents[0])
-    if len(archive_contents) == 1 and os.is_dirarchive_contets_folder):
-        output = move_content_up(archive_contets_folder)
+    if len(archive_contents) == 1 and path.isdir(archive_contets_folder):
+        output = move_content_up(output, archive_contets_folder)
         print(f"Deleted redundant folder at {archive_contets_folder}")
     print(f"Inner content moved to {output} folder")
     
