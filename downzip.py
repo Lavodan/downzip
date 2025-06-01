@@ -37,9 +37,13 @@ def main(args=[]):
     
     archive_folder_file.cleanup()
     print("Intermediate files deleted")
-    
-    output = move_content_up(output, path.join(output, "inkscape"))
-    print(f"Inkscape content moved to {output} folder")
+
+    archive_contents = os.listdir(output)
+    archive_contets_folder = path.join(output, archive_contents[0])
+    if len(archive_contents) == 1 and os.is_dirarchive_contets_folder):
+        output = move_content_up(archive_contets_folder)
+        print(f"Deleted redundant folder at {archive_contets_folder}")
+    print(f"Inner content moved to {output} folder")
     
     try:
         if "-launch" in FLAGS:
